@@ -1,0 +1,27 @@
+name = "ororo-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-15"
+node_compat = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ororo-production"
+database_id = "your-database-id-here"
+
+[vars]
+ENVIRONMENT = "production"
+
+# Use wrangler secret put to set these:
+# JWT_SECRET
+# MTN_MOMO_API_KEY
+# AIRTEL_MONEY_API_KEY
+
+[env.staging]
+name = "ororo-api-staging"
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "ororo-staging"
+database_id = "your-staging-database-id-here"
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
