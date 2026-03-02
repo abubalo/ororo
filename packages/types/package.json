@@ -1,0 +1,19 @@
+{
+  "name": "@ororo/types",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./api": "./src/api/index.ts",
+    "./models": "./src/models/index.ts",
+    "./enums": "./src/enums.ts",
+    "./constants": "./src/constants.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}
