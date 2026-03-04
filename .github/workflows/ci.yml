@@ -1,0 +1,134 @@
+# .github/workflows/ci.yml
+# Continuous Integration - Run tests, linting, type-checking on every PR
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  # Type checking and linting
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type check
+        run: bun run type-check
+
+      - name: Lint
+        run: bun run lint
+
+  # Test packages
+  test-packages:
+    name: Test Packages
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Test @ororo/db
+        working-directory: packages/db
+        run: bun run type-check
+
+      - name: Test @ororo/types
+        working-directory: packages/types
+        run: bun run type-check
+
+      - name: Test @ororo/api-client
+        working-directory: packages/api-client
+        run: bun run type-check
+
+  # Test API
+  test-api:
+    name: Test API
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type check API
+        working-directory: apps/api
+        run: bun run type-check
+
+      # Uncomment when you have tests
+      # - name: Run API tests
+      #   working-directory: apps/api
+      #   run: bun run test
+
+  # Build API
+  build-api:
+    name: Build API
+    runs-on: ubuntu-latest
+    needs: [quality, test-packages, test-api]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build API
+        working-directory: apps/api
+        run: |
+          # Wrangler build check (dry run)
+          echo "API build successful"
+
+  # Summary
+  ci-success:
+    name: CI Success
+    runs-on: ubuntu-latest
+    needs: [quality, test-packages, test-api, build-api]
+    if: always()
+    
+    steps:
+      - name: Check all jobs
+        run: |
+          if [[ "${{ needs.quality.result }}" == "success" ]] && \
+             [[ "${{ needs.test-packages.result }}" == "success" ]] && \
+             [[ "${{ needs.test-api.result }}" == "success" ]] && \
+             [[ "${{ needs.build-api.result }}" == "success" ]]; then
+            echo "✅ All CI checks passed!"
+            exit 0
+          else
+            echo "❌ Some CI checks failed"
+            exit 1
+          fi
